@@ -1,0 +1,12 @@
+openai
+fastapi
+uvicorn
+pymongo
+python-dotenv
+torch
+marker-pdf
+asyncio
+langchain
+python-multipart
+langchain-openai 
+langchain-community

@@ -1,0 +1,171 @@
+{
+	"info": {
+		"_postman_id": "4cdc0f13-5353-4fbe-8829-fe66ceb618b8",
+		"name": "Document Processing API",
+		"description": "API for processing and searching PDF documents",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28208933"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Process PDFs",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "files",
+							"description": "PDF files to process",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/process-pdfs/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"process-pdfs",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Job Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/job-status/{job_id}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"job-status",
+						"{job_id}"
+					],
+					"variable": [
+						{
+							"key": "job_id",
+							"value": "job_20240120_123456",
+							"description": "ID of the processing job"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search Documents",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"query\": \"example search query\",\n  \"k\": 5,\n  \"metadata_filter\": {\n    \"category\": \"example\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/search/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"search",
+						""
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Ai response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Tenant-ID",
+								"value": "1",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"The purpose of this Procurement Policy\",\n  \"k\": 5,\n  \"metadata_filter\": {\n    \"category\": \"policy\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/search/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"search",
+								""
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 20 Jan 2025 13:12:00 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "8633"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"query\": \"The purpose of this Procurement Policy\",\n    \"ai_response\": {\n        \"answer\": \"The purpose of the MAV Procurement Policy, as outlined in the provided policy documents, is multifaceted and aims to ensure that procurement activities are conducted in a consistent, ethical, and optimized manner to achieve the best outcomes for the local government sector. The specific objectives of the policy can be summarized as follows:\\n\\n1. **Establish a Consistent and Controlled Process**: The policy aims to establish a procurement framework that ensures a consistent and controlled process is deployed every time procurement activities are conducted by MAV Procurement (Document 1: Purpose).\\n\\n2. **Ethical Procurement Process**: It seeks to establish an ethical procurement process by implementing a transparent and equitable procurement framework that focuses on probity considerations throughout the procurement activities (Document 1: Purpose).\\n\\n3. **Optimize Outcomes**: The policy is designed to optimize outcomes from each procurement process, leveraging best practice methodologies to ensure that the local government sector gets the best value for money and benefits from MAV Procurement's aggregated contracts (Document 1: Purpose & Document 2).\\n\\n4. **Demonstrate Accountability**: It aims to demonstrate accountability in procurement activities, ensuring that all decisions are timely, transparent, and can be accounted for, providing an audit trail for monitoring and reporting purposes (Document 1: Purpose & Document 5: 4.2.7 Timely and transparent decision making).\\n\\nThe policy documents also highlight the importance of MAV Procurement in acting as an aggregator for the local government sector, developing contracts that councils can access, thereby saving time and money, and assisting in achieving better value through competitive advantages (Document 2).\\n\\nFurthermore, the policy is governed by several guiding principles including probity, equity, transparency, ethical behavior, open and fair competition, best value, risk management, social and environmental impact, planning and strategy development, developing and managing suppliers, timely and accountable decision making, and collaborative procurement (Document 4: 4.1 Guiding Principles). These principles underscore the policy's commitment to ethical, efficient, and effective procurement practices.\\n\\nIt's also important to note that while the MAV Procurement is not obliged to comply with the Local Government Act 2020, this policy has been developed recognizing sections 108 & 109 of the Act to align with its requirements where applicable. This alignment ensures that the local government sector can have confidence in MAV's procurement activities conducted on their behalf (Document 1: Scope).\\n\\nIn summary, the purpose of the MAV Procurement Policy is to establish a framework that ensures procurement activities are conducted in a consistent, ethical, and optimized manner, demonstrating accountability and adhering to a set of guiding principles designed to achieve the best outcomes for the local government sector.\",\n        \"metadata\": {\n            \"model\": \"gpt-4-turbo-preview\",\n            \"num_documents\": 5,\n            \"sources\": [\n                \"MAV-Procurement-Policy-2023.pdf\",\n                \"MAV-Procurement-Policy-2023.pdf\",\n                \"MAV-Procurement-Policy-2023.pdf\",\n                \"MAV-Procurement-Policy-2023.pdf\",\n                \"MAV-Procurement-Policy-2023.pdf\"\n            ]\n        }\n    },\n    \"relevant_documents\": [\n        {\n            \"content\": \"# **2. Purpose**\\n\\nThe purpose of this Procurement Policy (the 'Policy') is to:\\n\\n- Establish the procurement framework in which MAV Procurement conducts procurement activities, ensuring a consistent and controlled process is deployed every time,\\n- Establish an ethical procurement process by implementing a transparent and equitable procurement framework that focuses on probity considerations throughout,\\n- Establish a procurement framework designed to optimise outcomes from each and every process, leveraging best practice methodologies,\\n- Demonstrate accountability.\\n\\n# **3. Scope**\\n\\nWhilst MAV Procurement is not obliged to comply with the Local Government Act 2020, this Procurement Policy is made recognising Sections 108 & 109 of the *Local Government Act 2020* and has been developed to comply, where applicable, with its requirements so that the local government sector may have confidence in MAV's procurement activities conducted on their behalf.\",\n            \"metadata\": {\n                \"source\": \"MAV-Procurement-Policy-2023.pdf\",\n                \"type\": \"pdf\",\n                \"original_path\": \"/Users/devashish/Desktop/unimarket/uniGen/server/processed_texts/1/MAV-Procurement-Policy-2023.md\"\n            }\n        },\n        {\n            \"content\": \"MAV Procurement provides better outcomes to local government by acting as an aggregator and developing contracts that councils can access. The benefits to the local government sector range from negating the need to run their own individual tender to establish a contract, saving time and money, to assist our clients to get better value for money through competitive advantages by aggregating sector volume.\\n\\nIn acting on behalf of the local government sector, MAV Procurement ensures that its own procurement framework is governed by appropriate policies and procedures that align with sector requirements; this Policy and the accompanying MAV Procurement Process Overview detail the procurement framework within which MAV Procurement conduct their procurement operations.\\n\\n# **2. Purpose**\\n\\nThe purpose of this Procurement Policy (the 'Policy') is to:\",\n            \"metadata\": {\n                \"source\": \"MAV-Procurement-Policy-2023.pdf\",\n                \"type\": \"pdf\",\n                \"original_path\": \"/Users/devashish/Desktop/unimarket/uniGen/server/processed_texts/1/MAV-Procurement-Policy-2023.md\"\n            }\n        },\n        {\n            \"content\": \"| Title: | Procurement Policy |\\n| --- | --- |\\n| Date Last Adopted: | 1 December 2023 |\\n| Approval Authority: | MAV Board |\\n\\n# **1. Forward**\\n\\nThe role of procurement is increasingly seen by both private and public sector organisations as a key component of achieving strategic business objectives. Each year, the councils collectively spend significant sums in procuring goods and services in a wide variety of expenditure areas.\",\n            \"metadata\": {\n                \"source\": \"MAV-Procurement-Policy-2023.pdf\",\n                \"type\": \"pdf\",\n                \"original_path\": \"/Users/devashish/Desktop/unimarket/uniGen/server/processed_texts/1/MAV-Procurement-Policy-2023.md\"\n            }\n        },\n        {\n            \"content\": \"This Policy applies to all contracting and procurement activities conducted by MAV Procurement on behalf of the local government sector and is binding upon MAV Procurement, MAV staff, contractors, and consultants engaged by the MAV.\\n\\nThis Policy and its accompanying documents is the primary reference point for how all procurement should be performed by MAV Procurement when establishing contracts and supply arrangements for access by the local government sector.\\n\\n# **4. Policy, provisions, and principles**\\n\\n### **4.1 Guiding Principles**\\n\\nThis policy is governed by the adherence to the following principles with due regard for the MAV's legislative, strategic and other compliance requirements:\\n\\n- Probity, equity, transparency, and ethical behaviour\\n- Open and fair competition\\n- Best value\\n- Risk management\\n- Social and environmental impact\\n- Planning and strategy development\\n- Developing and managing suppliers\\n- Timely and accountable decision making\\n- Collaborative Procurement\",\n            \"metadata\": {\n                \"source\": \"MAV-Procurement-Policy-2023.pdf\",\n                \"type\": \"pdf\",\n                \"original_path\": \"/Users/devashish/Desktop/unimarket/uniGen/server/processed_texts/1/MAV-Procurement-Policy-2023.md\"\n            }\n        },\n        {\n            \"content\": \"Policy\\n\\n### **4.2.7 Timely and transparent decision making**\\n\\nMAV Procurement maintains consistency in the approach to procurement across the range of contracts provided through coherent frameworks, policies, and procedures. Transparency in procurement means being able to explain and provide evidence on the process followed. The test of transparency is that an independent third party must be able to see clearly that a process has been followed and that the process is fair and reasonable.\\n\\nTherefore, the processes by which all procurement activities are conducted will be in accordance with this Policy and related MAV and MAV Procurement policies and procedures.\\n\\nAdditionally:\\n\\n- all MAV Procurement staff must be able to account for all procurement decisions made over the lifecycle of all MAV Procurement contracts and provide feedback on them; and\\n- all procurement activities are to provide an audit trail for monitoring and reporting purposes.\\n\\n### **4.3 Standards**\",\n            \"metadata\": {\n                \"source\": \"MAV-Procurement-Policy-2023.pdf\",\n                \"type\": \"pdf\",\n                \"original_path\": \"/Users/devashish/Desktop/unimarket/uniGen/server/processed_texts/1/MAV-Procurement-Policy-2023.md\"\n            }\n        }\n    ]\n}"
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}

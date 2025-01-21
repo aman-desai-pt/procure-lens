@@ -30,3 +30,6 @@ pdf_conversion.log
 
 # macOS
 .DS_Store
+
+policy_docs
+processed_texts

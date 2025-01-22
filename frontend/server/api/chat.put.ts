@@ -13,11 +13,11 @@ export default defineEventHandler(async (event) => {
       message: 'Header x-assistant-id missing',
     });
 
-  const vectorStoreId = getHeader(event, 'x-vector-id');
-  if (!vectorStoreId)
+  const chatId = getHeader(event, 'x-chat-id');
+  if (!chatId)
     throw createError({
       statusCode: 400,
-      message: 'Header x-vector-id missing',
+      message: 'Header x-chat-id missing',
     });
 
   const reqBody = await readBody<{
@@ -38,21 +38,17 @@ export default defineEventHandler(async (event) => {
     );
   }
 
-  const thread = await openai.beta.threads.create({
-    messages: [
-      {
-        role: 'user',
-        content: reqBody.query,
-        attachments: fileResponses.map((f) => ({ file_id: f.id, tools: [{ type: 'file_search' }] })) || undefined,
-      },
-    ],
+  await openai.beta.threads.messages.create(chatId, {
+    role: 'user',
+    content: reqBody.query,
+    attachments: fileResponses.map((f) => ({ file_id: f.id, tools: [{ type: 'file_search' }] })) || undefined,
   });
 
-  const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
+  const run = await openai.beta.threads.runs.createAndPoll(chatId, {
     assistant_id: assistantId,
   });
 
-  const messages = await openai.beta.threads.messages.list(thread.id, {
+  const messages = await openai.beta.threads.messages.list(chatId, {
     run_id: run.id,
   });
 
@@ -64,5 +60,5 @@ export default defineEventHandler(async (event) => {
     llmAnswer = text.value;
   }
 
-  return { id: thread.id, firstResponse: llmAnswer };
+  return { response: llmAnswer };
 });

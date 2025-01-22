@@ -31,8 +31,10 @@ const userQuery = ref<string>('');
 const tenantInfoStore = useStorage<Record<string, TenantInfo>>('tenantInfoStore', {});
 
 /** Assistant creat / load logic START */
+const loadingTenant = ref(false);
 const loadTenant = async () => {
   if (!tenantIdInput.value) return;
+  loadingTenant.value = true;
   tenantInfo.value = tenantInfoStore.value[tenantIdInput.value];
   if (!tenantInfo.value) {
     const { id, vector } = await $fetch('/api/assistant', { method: 'POST' });
@@ -48,11 +50,11 @@ const loadTenant = async () => {
   }
   tenantId.value = tenantIdInput.value;
   tenantIdInput.value = '';
+  loadingTenant.value = false;
 };
 /** Assistant creat / load logic END */
 
 /** Datasource logic START */
-const datasourceDropZone = ref<HTMLDivElement>();
 const selectedDatasources = ref<File[]>([]);
 
 function onDropDatasource(_files: File[] | FileList | null) {
@@ -65,11 +67,6 @@ function onDropDatasource(_files: File[] | FileList | null) {
 function onDatasourceSelect(event: Event) {
   onDropDatasource((event.target as HTMLInputElement)?.files);
 }
-const { isOverDropZone: isOverDataSourceDropZone } = useDropZone(datasourceDropZone, {
-  multiple: true,
-  onDrop,
-  dataTypes: ['application/pdf'],
-});
 /** Datasource logic END */
 
 /** Attachment logic START */
@@ -94,9 +91,11 @@ const { isOverDropZone } = useDropZone(attachmentDropZone, {
 /** Attachment logic END */
 
 /** Chat creation logic START */
+const creatingChat = ref(false);
 const createChat = async () => {
   if (!userQuery.value) return;
   if (!tenantInfo.value) return;
+  creatingChat.value = true;
   const fileIds: string[] = [];
   if (selectedAttachments.value.length > 0) {
     const formData = new FormData();
@@ -143,14 +142,18 @@ const createChat = async () => {
   activeChatId.value = id;
   userQuery.value = '';
   selectedAttachments.value = [];
+  creatingChat.value = false;
 };
 /** Chat creation logic END */
 
 /** Chat updation logic START */
+const updatingChat = ref(false);
 const updateChat = async () => {
   if (!userQuery.value) return;
   if (!tenantInfo.value) return;
   if (!activeChatId.value) return;
+
+  updatingChat.value = true;
 
   activeChat.value!.messages.push({
     role: 'user',
@@ -193,11 +196,16 @@ const updateChat = async () => {
     contents: response,
     fileLength: 0,
   });
+
+  updatingChat.value = false;
 };
 /** Chat updation logic END */
 
 /** Datasource updation logic START */
+const closeButton = ref<HTMLButtonElement>();
+const loadingDatasourceUpdate = ref(false);
 const updateDatasource = async () => {
+  loadingDatasourceUpdate.value = true;
   if (!tenantInfo.value) return;
   if (!selectedDatasources.value) return;
   const fileIds: string[] = [];
@@ -225,17 +233,29 @@ const updateDatasource = async () => {
   tenantInfo.value.datasource.totalFiles += fileIds.length;
 
   selectedDatasources.value = [];
+  loadingDatasourceUpdate.value = false;
+  setTimeout(() => closeButton.value?.click(), 1000);
 };
 /** Datasource updation logic END */
 </script>
 
 <template>
   <main class="w-full flex items-center justify-center min-h-screen" v-if="!tenantId">
-    <div class="flex flex-col w-1/4 space-y-3">
+    <div class="flex flex-col w-1/4 space-y-3 text-center">
       <span class="text-2xl font-noto font-black text-center">Procure Lens</span>
       <span class="text-md text-center">Login as tenant</span>
-      <input type="text" placeholder="Tenant ID" class="input input-bordered input-md w-full" v-model="tenantIdInput" />
-      <button class="btn w-full btn-sm btn-secondary" @click="loadTenant">Login</button>
+      <input
+        type="text"
+        placeholder="Tenant ID"
+        class="input input-bordered input-md w-full"
+        @keydown.enter="loadTenant"
+        :disabled="loadingTenant"
+        v-model="tenantIdInput"
+      />
+      <button class="btn w-full btn-sm btn-secondary" @click="loadTenant" :disabled="loadingTenant">
+        <span class="loading loading-spinner loading-sm" v-if="loadingTenant"></span>
+        <span v-else>Login</span>
+      </button>
     </div>
   </main>
   <main class="min-h-screen bg-zinc-100" v-else>
@@ -282,24 +302,30 @@ const updateDatasource = async () => {
       <div
         class="flex justify-center h-full w-full bg-white rounded-xl border m-4 -mt-2"
         :class="`${activeChat ? 'items-start' : 'items-center'}`"
-        ref="attachmentDropZone"
       >
         <div class="flex flex-col max-w-[780px] w-full text-center space-y-8 -mt-32" v-if="!activeChat">
           <span class="text-3xl font-bold font-noto text-blue-700">What can I help with?</span>
           <div
             class="w-full rounded-lg flex flex-col p-1 border border-blue-100 bg-zinc-50 focus-within:ring-1 focus-within:ring-blue-400"
             :class="{ 'ring-1 ring-blue-400': isOverDropZone }"
-            @submit.stop="createChat"
           >
-            <div class="flex items-start w-full justify-between">
+            <div class="flex items-start w-full justify-between" ref="attachmentDropZone">
               <textarea
                 type="text"
                 class="focus:ring-0 focus:outline-none w-11/12 h-20 rounded-lg text-sm p-2 resize-none bg-zinc-50"
                 placeholder="Message Procure Lens"
+                @keydown.enter="createChat"
+                :disabled="creatingChat"
                 v-model="userQuery"
               />
-              <button type="submit" class="w-8 h-8 btn btn-xs btn-secondary btn-square" @click.stop="createChat">
-                <Icon name="uil:message" class="w-5 h-5" />
+              <button
+                type="submit"
+                class="w-8 h-8 btn btn-xs btn-secondary btn-square"
+                :disabled="creatingChat"
+                @click.stop="createChat"
+              >
+                <Icon name="uil:message" class="w-5 h-5" v-if="!creatingChat" />
+                <span class="loading loading-spinner loading-sm" v-else></span>
               </button>
             </div>
             <div class="flex w-full justify-between items-center">
@@ -343,6 +369,7 @@ const updateDatasource = async () => {
                 </span>
               </div>
             </div>
+            <span class="loading loading-spinner loading-sm" v-if="updatingChat"></span>
           </div>
           <div class="w-2/3 mx-auto h-32">
             <div
@@ -354,9 +381,16 @@ const updateDatasource = async () => {
                   type="text"
                   class="focus:ring-0 focus:outline-none w-11/12 h-20 rounded-lg text-sm p-2 resize-none bg-zinc-50"
                   placeholder="Message Procure Lens"
+                  @keydown.enter="updateChat"
+                  :disabled="updatingChat"
                   v-model="userQuery"
                 />
-                <button type="submit" class="w-8 h-8 btn btn-xs btn-secondary btn-square" @click="updateChat">
+                <button
+                  type="submit"
+                  class="w-8 h-8 btn btn-xs btn-secondary btn-square"
+                  :disabled="updatingChat"
+                  @click="updateChat"
+                >
                   <Icon name="uil:message" class="w-5 h-5" />
                 </button>
               </div>
@@ -393,16 +427,14 @@ const updateDatasource = async () => {
     </div>
     <dialog id="my_modal_1" class="modal">
       <div class="modal-box">
-        <div class="max-w-xl" ref="datasourceDropZone">
+        <div class="max-w-xl">
           <label
-            class="flex justify-center w-full h-32 px-4 transition bg-white border border-dashed rounded-md appearance-none cursor-pointer focus:outline-none"
-            :class="isOverDataSourceDropZone ? 'border-blue-400' : 'border-gray-300'"
+            class="flex justify-center w-full h-32 px-4 transition bg-white border border-dashed rounded-md appearance-none cursor-pointer focus:outline-none border-gray-300"
           >
             <span class="flex items-center justify-center space-x-2">
               <span class="text-sm text-gray-600 text-center">
                 <Icon name="mage:image-upload" class="w-6 h-6 text-gray-600" /><br />
-                Drop image to Attach, or
-                <span class="text-blue-600 underline">browse</span><br />
+                <span class="text-blue-600 underline">browse files</span><br />
                 <span class="text-xs text-gray-400">Supported Formats: pdf</span>
               </span>
             </span>
@@ -428,9 +460,12 @@ const updateDatasource = async () => {
           <div class="flex items-center space-x-2">
             <form method="dialog">
               <!-- if there is a button in form, it will close the modal -->
-              <button class="btn btn-sm">Close</button>
+              <button class="btn btn-sm" ref="closeButton" :disabled="loadingDatasourceUpdate">Close</button>
             </form>
-            <button class="btn btn-secondary btn-sm" @click="updateDatasource">Add Datasource</button>
+            <button class="btn btn-secondary btn-sm" @click="updateDatasource" :disabled="loadingDatasourceUpdate">
+              <span v-if="!loadingDatasourceUpdate">Add Datasource</span>
+              <span class="loading loading-spinner loading-sm" v-else></span>
+            </button>
           </div>
         </div>
       </div>

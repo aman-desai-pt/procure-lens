@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     const fileStreams = (await Promise.all(reqBody.fileIds.map(
       async (fileId) => {
         const b = await blobStorage.getItemRaw(`${fileId}.pdf`) as ArrayBuffer | null;
-        return b ? bufferToReadableStream(Buffer.from(b)) : Promise.resolve();
+        return b ? bufferToResponseLike(Buffer.from(b), fileId) : Promise.resolve();
       }
     ))).filter(f => !!f);
 
@@ -60,4 +60,11 @@ function bufferToReadableStream(buffer: Buffer) {
       this.push(null); // Signals the end of the stream
     }
   });
+}
+
+function bufferToResponseLike(buffer: Buffer, fileId: string) {
+  return {
+    url: `${process.env.VERCEL_STORAGE_BASE_URL}/${fileId}.pdf`,
+    blob: () => Promise.resolve(new Blob([buffer]))
+  }
 }

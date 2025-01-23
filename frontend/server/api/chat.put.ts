@@ -27,11 +27,11 @@ export default defineEventHandler(async (event) => {
 
   let fileResponses: OpenAI.Files.FileObject[] = [];
   if (reqBody.fileIds && reqBody.fileIds.length > 0) {
-    const filePaths = reqBody.fileIds.map((fileId) => `${baseDir}/${fileId}.pdf`);
     fileResponses = await Promise.all(
-      filePaths.map(async (filePath) => {
+      reqBody.fileIds.map(async (fileId) => {
+        const b = await blobStorage.getItemRaw(`${fileId}.pdf`) as ArrayBuffer;
         return await openai.files.create({
-          file: fs.createReadStream(filePath),
+          file: bufferToResponseLike(Buffer.from(b), fileId),
           purpose: 'assistants',
         });
       })
@@ -62,3 +62,10 @@ export default defineEventHandler(async (event) => {
 
   return { response: llmAnswer };
 });
+
+function bufferToResponseLike(buffer: Buffer, fileId: string) {
+  return {
+    url: `${process.env.VERCEL_STORAGE_BASE_URL}/${fileId}.pdf`,
+    blob: () => Promise.resolve(new Blob([buffer]))
+  }
+}

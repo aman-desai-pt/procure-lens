@@ -25,8 +25,29 @@ export default defineEventHandler(async (event) => {
   }>(event);
 
   if (reqBody.fileIds.length > 0) {
+    // Download files
+    await Promise.all(reqBody.fileIds.map(
+      async (fileId) => {
+        const b = await blobStorage.getItemRaw(`${fileId}.pdf`) as ArrayBuffer | null;
+        return b ? downloadFileFromArrayBuffer(fileId, b) : Promise.resolve();
+      }
+    ));
+
     const filePaths = reqBody.fileIds.map((fileId) => `${baseDir}/${fileId}.pdf`);
     const fileStreams = filePaths.map((filePath) => fs.createReadStream(filePath));
     await openai.beta.vectorStores.fileBatches.uploadAndPoll(vectorStoreId, { files: fileStreams });
   }
 });
+
+function downloadFileFromArrayBuffer(fileId: string, chunk: ArrayBuffer) {
+  return new Promise<void>((resolve, reject) => {
+    fs.appendFile(`${baseDir}/${fileId}.pdf`, Buffer.from(chunk), function (err) {
+      if (err) {
+        reject(err);
+      } else {
+        console.log("Saved", `${baseDir}/${fileId}.pdf`);
+        resolve();
+      }
+    });
+  });
+}

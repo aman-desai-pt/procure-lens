@@ -10,10 +10,14 @@ export default defineEventHandler(async (event) => {
   }
   const assetIds = await Promise.all(
     body.map(async (file) => {
-      const asset = Buffer.from(file.data.buffer);
-      const assetId = randomUUID();
-      await blobStorage.setItemRaw(`${assetId}.pdf`, asset);
-      return assetId;
+      try {
+        const asset = Buffer.from(file.data.buffer);
+        const assetId = randomUUID();
+        await blobStorage.setItemRaw(`${assetId}.pdf`, asset);
+        return assetId;
+      } catch (e) {
+        console.error(e);
+      }
     })
   );
 

@@ -13,6 +13,7 @@
     "@nuxt/icon": "^1.10.3",
     "@nuxtjs/google-fonts": "3.2.0",
     "@nuxtjs/tailwindcss": "^6.13.1",
+    "@vercel/blob": "^0.27.1",
     "@vueuse/core": "^12.4.0",
     "daisyui": "^4.12.23",
     "nuxt": "^3.15.2",

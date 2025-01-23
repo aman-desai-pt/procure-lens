@@ -38,8 +38,29 @@ export default defineEventHandler(async (event) => {
     );
   }
 
+  const detailedInstructions = `
+        Using only the information from the provided policy documents, answer the following question.
+        If the answer cannot be fully determined from the given context, acknowledge what you can answer and what information is missing.
+
+        Context from relevant policy documents:
+        {context}
+
+        Question: {query}
+
+        Please provide a clear, well-structured answer that:
+        1. Directly addresses the question
+        2. Cites specific sections of the policies where relevant
+        3. Explains any important context or implications
+        4. Highlights any limitations or additional considerations
+
+        Answer:`;
+
   const thread = await openai.beta.threads.create({
     messages: [
+      { 
+        role: 'user', 
+        content: detailedInstructions 
+      },
       {
         role: 'user',
         content: reqBody.query,

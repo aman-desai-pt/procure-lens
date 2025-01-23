@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useDropZone, useStorage } from '@vueuse/core';
+import MarkdownRenderer from './MarkdownRenderer.vue'
 
 type TenantInfo = {
   assistantId: string;
@@ -363,7 +364,7 @@ const updateDatasource = async () => {
                 </div>
               </div>
               <div class="flex flex-col">
-                <span>{{ message.contents }}</span>
+                <MarkdownRenderer :content="message.contents" />
                 <span class="badge badge-secondary badge-sm badge-outline p-0 px-2" v-if="message.fileLength > 0">
                   {{ message.fileLength }} file{{ message.fileLength > 1 ? 's' : '' }}
                 </span>

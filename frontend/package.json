@@ -16,6 +16,7 @@
     "@vercel/blob": "^0.27.1",
     "@vueuse/core": "^12.4.0",
     "daisyui": "^4.12.23",
+    "marked": "^15.0.6",
     "nuxt": "^3.15.2",
     "openai": "^4.79.1",
     "uncrypto": "^0.1.3",

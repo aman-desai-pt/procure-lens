@@ -30,9 +30,7 @@ const formatJsonResponse = (jsonData: any[]) => {
       (item, index) => `
     <div class="bg-base-100 shadow-lg rounded-lg p-4 mb-4">
       <h3 class="text-lg font-medium text-primary mb-2">${item.title || `Response ${index + 1}`}</h3>
-      <p class="text-gray-700 mb-4"><strong>${item.summary || 'Quick Overview'} <br /></strong> ${
-        item.summary || 'This item has no overview available.'
-      }</p>
+      <p class="text-gray-700 mb-4"><strong>${item.summary || 'Quick Overview'} <br /></strong></p>
       <div class="text-gray-600">
         <p class="mb-2">${item.details || 'Additional context is unavailable at the moment.'}</p>
         

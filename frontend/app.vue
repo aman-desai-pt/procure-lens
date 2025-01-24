@@ -452,7 +452,7 @@ const formatAssistantName = (name: string) => {
                   <Icon name="uil:message" class="w-5 h-5" />
                 </button>
               </div>
-              <div class="flex w-full justify-between items-center">
+              <!-- <div class="flex w-full justify-between items-center">
                 <input
                   id="attach-button"
                   type="file"
@@ -477,7 +477,7 @@ const formatAssistantName = (name: string) => {
                     <Icon name="carbon:close-filled" />
                   </button>
                 </div>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>

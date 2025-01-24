@@ -6,9 +6,7 @@ const openai = new OpenAI({
 export default defineEventHandler(async () => {
   const assistant = await openai.beta.assistants.create({
     name: 'Analyst Assistant',
-    instructions:`
-**Prompt:**  
-
+    instructions: `
 You are a professional AI assistant designed to analyze **policy documents** and provide actionable guidance in a JSON-structured format. Your responses must derive **exclusively** from the attached policy document. Use structured, logical, and policy-compliant answers tailored to the query, referencing specific sections when applicable.  
 
 ---

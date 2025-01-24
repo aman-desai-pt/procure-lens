@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
       {
         role: 'user',
         content: reqBody.query,
-        attachments: fileResponses.map((f) => ({ file_id: f.id, tools: [{ type: 'file_search' }] })) || undefined,
+        // attachments: fileResponses.map((f) => ({ file_id: f.id, tools: [{ type: 'file_search' }] })) || undefined,
       },
     ],
   });
@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
   const messages = await openai.beta.threads.messages.list(thread.id, {
     run_id: run.id,
   });
-
+  
   const message = messages.data.pop()!;
 
   let llmAnswer = '';
@@ -64,6 +64,6 @@ export default defineEventHandler(async (event) => {
     const { text } = message.content[0];
     llmAnswer = text.value;
   }
-
+  
   return { id: thread.id, firstResponse: llmAnswer };
 });

@@ -1,6 +1,19 @@
 <script setup lang="ts">
 import { useDropZone, useStorage } from '@vueuse/core';
-import MarkdownRenderer from './MarkdownRenderer.vue'
+import MarkdownRenderer from './MarkdownRenderer.vue';
+
+type Assistant = {
+  id: string;
+  name: string;
+  createdAt: number;
+  model: string;
+  vector_id: string;
+};
+
+const assistants = ref<Assistant[]>([]);
+const availableAssistants = computed(() => assistants.value);
+const selectedAssistant = ref<Assistant | null>(null);
+const loadingAssistants = ref(false);
 
 type TenantInfo = {
   assistantId: string;
@@ -18,7 +31,6 @@ type TenantInfo = {
   }[];
 };
 
-const tenantIdInput = ref('');
 const tenantId = ref('');
 const tenantInfo = ref<TenantInfo>();
 
@@ -34,24 +46,37 @@ const tenantInfoStore = useStorage<Record<string, TenantInfo>>('tenantInfoStore'
 /** Assistant creat / load logic START */
 const loadingTenant = ref(false);
 const loadTenant = async () => {
-  if (!tenantIdInput.value) return;
+  if (!selectedAssistant.value) {
+    alert('Please select an assistant');
+    return;
+  }
+
   loadingTenant.value = true;
-  tenantInfo.value = tenantInfoStore.value[tenantIdInput.value];
-  if (!tenantInfo.value) {
-    const { id, vector } = await $fetch('/api/assistant', { method: 'POST' });
-    tenantInfo.value = {
-      assistantId: id,
-      vector,
+  try {
+    const newTenantInfo = {
+      assistantId: selectedAssistant.value.id,
+      vector: selectedAssistant.value.vector_id,
       datasource: {
         totalFiles: 0,
       },
       threads: [],
     };
-    tenantInfoStore.value[tenantIdInput.value] = tenantInfo.value;
+
+    tenantInfoStore.value[selectedAssistant.value.id] = newTenantInfo;
+
+    tenantInfo.value = newTenantInfo;
+
+    tenantId.value = selectedAssistant.value.id;
+  } catch (error) {
+    console.error('Failed to load tenant:', error);
+    alert('Failed to load tenant. Please try again.');
+
+    // Reset states
+    tenantId.value = '';
+    tenantInfo.value = undefined;
+  } finally {
+    loadingTenant.value = false;
   }
-  tenantId.value = tenantIdInput.value;
-  tenantIdInput.value = '';
-  loadingTenant.value = false;
 };
 /** Assistant creat / load logic END */
 
@@ -107,7 +132,7 @@ const createChat = async () => {
       method: 'POST',
       body: formData,
     });
-    fileIds.push(...savedFileIds);
+    fileIds.push(...(savedFileIds as string[]));
   }
   const { id, firstResponse } = await $fetch('/api/chat', {
     method: 'POST',
@@ -178,7 +203,7 @@ const updateChat = async () => {
       method: 'POST',
       body: formData,
     });
-    fileIds.push(...savedFileIds);
+    fileIds.push(...(savedFileIds as string[]));
   }
   const { response } = await $fetch('/api/chat', {
     method: 'PUT',
@@ -218,7 +243,7 @@ const updateDatasource = async () => {
     method: 'POST',
     body: formData,
   });
-  fileIds.push(...savedFileIds);
+  fileIds.push(...(savedFileIds as string[]));
 
   await $fetch('/api/assistant', {
     method: 'PUT',
@@ -238,22 +263,54 @@ const updateDatasource = async () => {
   setTimeout(() => closeButton.value?.click(), 1000);
 };
 /** Datasource updation logic END */
+
+// Fetch available assistants
+const fetchAssistants = async () => {
+  loadingAssistants.value = true;
+  try {
+    const response = await $fetch('/api/assistant', { method: 'GET' });
+    assistants.value = response.assistants as Assistant[];
+  } catch (error) {
+    console.error('Failed to fetch assistants:', error);
+    // Optionally, show an error toast or message
+  } finally {
+    loadingAssistants.value = false;
+  }
+};
+
+onMounted(fetchAssistants);
+
+const formatAssistantName = (name: string) => {
+  return name.replace(/\.pdf$/i, '');
+};
 </script>
 
 <template>
   <main class="w-full flex items-center justify-center min-h-screen" v-if="!tenantId">
-    <div class="flex flex-col w-1/4 space-y-3 text-center">
+    <div class="flex flex-col w-1/2 space-y-4 text-center">
       <span class="text-2xl font-noto font-black text-center">Procure Lens</span>
-      <span class="text-md text-center">Login as tenant</span>
-      <input
-        type="text"
-        placeholder="Tenant ID"
-        class="input input-bordered input-md w-full"
-        @keydown.enter="loadTenant"
-        :disabled="loadingTenant"
-        v-model="tenantIdInput"
-      />
-      <button class="btn w-full btn-sm btn-secondary" @click="loadTenant" :disabled="loadingTenant">
+      <span class="text-md text-center">Select an Assistant</span>
+
+      <div v-if="loadingAssistants" class="flex justify-center items-center">
+        <span class="loading loading-spinner loading-lg"></span>
+      </div>
+
+      <select
+        v-else-if="availableAssistants.length > 0"
+        class="select select-bordered w-full"
+        v-model="selectedAssistant"
+      >
+        <option disabled selected value="">Choose an Assistant</option>
+        <option v-for="assistant in availableAssistants" :key="assistant.id" :value="assistant">
+          {{ formatAssistantName(assistant.name) }}
+        </option>
+      </select>
+
+      <div v-else class="alert alert-warning">
+        <span>No assistants found. Please create an assistant first.</span>
+      </div>
+
+      <button class="btn w-full btn-secondary" @click="loadTenant" :disabled="!selectedAssistant || loadingTenant">
         <span class="loading loading-spinner loading-sm" v-if="loadingTenant"></span>
         <span v-else>Login</span>
       </button>
@@ -263,7 +320,7 @@ const updateDatasource = async () => {
     <div class="flex items-center justify-between h-16 py-2 px-4">
       <div class="text-xl font-noto font-extrabold">Procure Lens</div>
       <div class="flex space-x-2 items-center">
-        <span class="text-zinc-600 font-extrabold">{{ tenantId }}</span>
+        <span class="text-zinc-600 font-extrabold">logout</span>
         <button class="btn btn-square btn-ghost text-red-600 btn-xs" @click="tenantId = ''">
           <Icon name="solar:logout-bold-duotone" class="w-6 h-6" />
         </button>
@@ -292,13 +349,13 @@ const updateDatasource = async () => {
           <span class="text-sm font-bold text-zinc-400">No chats found</span>
           <span class="text-xs text-zinc-400">Start a new chat</span>
         </div>
-        <div class="flex flex-col text-center">
+        <!-- <div class="flex flex-col text-center">
           <button class="btn w-full btn-sm btn-secondary mb-2" onclick="my_modal_1.showModal()">
             <Icon name="humbleicons:upload" class="w-5 h-5" />
             Add Data Source
           </button>
-          <span class="text-xs">{{ tenantInfo!.datasource.totalFiles }} file(s) added</span>
-        </div>
+          <span class="text-xs">{{ tenantInfo?.datasource?.totalFiles || 0 }} file(s) added</span>
+        </div> -->
       </div>
       <div
         class="flex justify-center h-full w-full bg-white rounded-xl border m-4 -mt-2"
@@ -426,7 +483,7 @@ const updateDatasource = async () => {
         </div>
       </div>
     </div>
-    <dialog id="my_modal_1" class="modal">
+    <!-- <dialog id="my_modal_1" class="modal">
       <div class="modal-box">
         <div class="max-w-xl">
           <label
@@ -460,7 +517,6 @@ const updateDatasource = async () => {
           </div>
           <div class="flex items-center space-x-2">
             <form method="dialog">
-              <!-- if there is a button in form, it will close the modal -->
               <button class="btn btn-sm" ref="closeButton" :disabled="loadingDatasourceUpdate">Close</button>
             </form>
             <button class="btn btn-secondary btn-sm" @click="updateDatasource" :disabled="loadingDatasourceUpdate">
@@ -470,6 +526,6 @@ const updateDatasource = async () => {
           </div>
         </div>
       </div>
-    </dialog>
+    </dialog> -->
   </main>
 </template>

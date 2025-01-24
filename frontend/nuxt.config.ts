@@ -18,4 +18,28 @@ export default defineNuxtConfig({
     },
     useStylesheet: true,
   },
+  tailwindcss: {
+    config: {
+      content: [
+        './components/**/*.{vue,js,ts}',
+        './layouts/**/*.vue',
+        './pages/**/*.vue',
+        './plugins/**/*.{js,ts}',
+        './app.vue',
+        './MarkdownRenderer.vue'
+      ],
+      theme: {
+        extend: {
+          fontFamily: {
+            noto: ['Noto Sans', 'sans-serif'],
+            lato: ['Lato', 'sans-serif'],
+          },
+        },
+      },
+      plugins: [require('daisyui')],
+      daisyui: {
+        themes: ['emerald'],
+      },
+    }
+  }
 })

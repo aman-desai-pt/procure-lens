@@ -7,6 +7,12 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+interface ChatMessage {
+  role: 'bot' | 'user';
+  contents: string;
+  fileLength: number; 
+}
+
 export default defineEventHandler(async (event) => {
   // Verify required headers.
   const assistantId = getHeader(event, 'x-assistant-id');
@@ -28,6 +34,7 @@ export default defineEventHandler(async (event) => {
     fileIds?: string[];
     query: string;
     workflowAnswers?: { [step: string]: string };
+    chatHistory?: ChatMessage[];
   }>(event);
 
   let fileResponses: OpenAI.Files.FileObject[] = [];
@@ -44,12 +51,11 @@ export default defineEventHandler(async (event) => {
     );
   }
 
-  // Use the workflow parser to update answers.
-  const { nextQuestion, updatedAnswers, complete, instructions } =
-    await determineNextWorkflowStep(
-      reqBody.query,
-      reqBody.workflowAnswers || {}
-    );
+const currentWorkflowAnswers = reqBody.workflowAnswers || {};
+const chatHistory = reqBody.chatHistory || []; // Provide the chat history if available
+
+const { nextQuestion, updatedAnswers, complete, instructions } =
+  await determineNextWorkflowStep(reqBody.query, currentWorkflowAnswers, chatHistory);
 
   // If the workflow isn’t complete or a terminal instruction exists,
   // return a clarifier response.

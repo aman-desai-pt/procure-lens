@@ -92,10 +92,12 @@ async function createChat() {
         'x-assistant-id': selectedAssistant.value.id,
         'x-vector-id': selectedAssistant.value.vector_id,
       },
+      // Pass an empty chatHistory since this is a new conversation.
       body: JSON.stringify({
         fileIds,
         query: userQuery.value,
         workflowAnswers: {},
+        chatHistory: []
       }),
     }).then((res) => res.json());
 
@@ -157,10 +159,12 @@ async function updateChat() {
         'x-assistant-id': selectedAssistant.value.id,
         'x-chat-id': activeChatId.value,
       },
+      // Include the full chat history from the current thread.
       body: JSON.stringify({
         fileIds,
         query: userQuery.value,
         workflowAnswers: activeChat.value?.workflowAnswers || {},
+        chatHistory: activeChat.value?.messages || []
       }),
     }).then((res) => res.json());
 
@@ -168,7 +172,7 @@ async function updateChat() {
       activeChat.value.workflowAnswers = response.workflowAnswers;
     }
 
-    // Add bot response
+    // Add bot response to the thread
     activeChat.value?.messages.push({
       role: 'bot',
       contents: response.clarifier ? response.question : response.response,
@@ -269,11 +273,7 @@ watch(
           <div class="flex-1 flex flex-col overflow-y-auto">
             <div class="p-4 flex justify-between items-center">
               <span class="text-sm font-medium text-gray-500">Conversations</span>
-              <button
-                @click="activeChatId = ''"
-                class="p-1 rounded-md hover:bg-gray-100"
-                title="New Chat"
-              >
+              <button @click="activeChatId = ''" class="p-1 rounded-md hover:bg-gray-100" title="New Chat">
                 <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -309,10 +309,7 @@ watch(
                 >
                   <div class="flex items-center space-x-2 mb-2">
                     <span class="font-medium">{{ message.role === 'bot' ? 'Assistant' : 'You' }}</span>
-                    <span
-                      v-if="message.fileLength > 0"
-                      class="text-xs bg-gray-200 px-2 py-0.5 rounded-full"
-                    >
+                    <span v-if="message.fileLength > 0" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">
                       {{ message.fileLength }} file{{ message.fileLength > 1 ? 's' : '' }}
                     </span>
                   </div>
@@ -326,11 +323,7 @@ watch(
           </div>
 
           <!-- Input Area -->
-          <div
-            ref="dropZoneRef"
-            class="border-t border-gray-200 p-4"
-            :class="{ 'border-blue-400': isOverDropZone }"
-          >
+          <div ref="dropZoneRef" class="border-t border-gray-200 p-4" :class="{ 'border-blue-400': isOverDropZone }">
             <div class="max-w-4xl mx-auto">
               <div class="flex items-end space-x-2">
                 <div class="flex-1">
@@ -341,27 +334,6 @@ watch(
                     placeholder="Type your message..."
                     @keydown.enter.prevent="activeChatId ? updateChat() : createChat()"
                   />
-                  <div class="mt-2 flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                      <input
-                        type="file"
-                        multiple
-                        accept=".pdf"
-                        class="hidden"
-                        id="file-upload"
-                        @change="(e) => onDrop(e.target.files)"
-                      />
-                      <label
-                        for="file-upload"
-                        class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
-                      >
-                        Attach Files
-                      </label>
-                      <span v-if="selectedAttachments.length > 0" class="text-sm text-gray-500">
-                        {{ selectedAttachments.length }} file(s) selected
-                      </span>
-                    </div>
-                  </div>
                 </div>
                 <button
                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"

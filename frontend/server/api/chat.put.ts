@@ -6,6 +6,11 @@ import { determineNextWorkflowStep } from '../utils/workflowParser';
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+interface ChatMessage {
+  role: 'bot' | 'user';
+  contents: string;
+  fileLength: number; // Indicates the number of attached files (if any)
+}
 
 // Example blobStorage placeholder – replace with your actual implementation.
 const blobStorage = {
@@ -35,6 +40,7 @@ export default defineEventHandler(async (event) => {
     fileIds?: string[];
     query: string;
     workflowAnswers?: { [step: string]: string };
+    chatHistory?: ChatMessage[];
   }>(event);
 
   // Process file attachments if provided.
@@ -52,8 +58,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const currentWorkflowAnswers = reqBody.workflowAnswers || {};
+  const chatHistory = reqBody.chatHistory || []; // Provide the chat history if available
+  
   const { nextQuestion, updatedAnswers, complete, instructions } =
-    await determineNextWorkflowStep(reqBody.query, currentWorkflowAnswers);
+    await determineNextWorkflowStep(reqBody.query, currentWorkflowAnswers, chatHistory);
 
   if (!complete || (complete && instructions)) {
     return {

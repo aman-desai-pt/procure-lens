@@ -120,7 +120,7 @@ only give the array of objects as response don't give anything else just array  
 ]
 
     `,
-        model: 'gpt-4o',
+        model: 'o3-mini',
         tools: [{ type: 'file_search' }],
         tool_resources: {
           file_search: { vector_store_ids: [vectorStore.id] }

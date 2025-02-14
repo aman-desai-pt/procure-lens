@@ -10,7 +10,8 @@ export default defineEventHandler(async () => {
       limit: 100, 
       order: 'desc', 
     });
-
+    console.log(assistantsList);
+    
     return {
       total: assistantsList.data.length,
       assistants: assistantsList.data.map(assistant => ({
